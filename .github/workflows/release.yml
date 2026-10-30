@@ -1,0 +1,73 @@
+name: Release
+
+# Runs when a version tag is pushed:  npm version patch && git push --follow-tags
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Check tag matches package.json
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Test
+        run: npm test
+
+      - name: Publish to npm
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::NPM_TOKEN secret is not set. Create an npm automation token and run: gh secret set NPM_TOKEN"
+            exit 1
+          fi
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub release
+        run: |
+          npm pack
+          awk -v v="$VERSION" 'index($0, "## [" v "]") == 1 { f = 1; next } /^## \[/ { f = 0 } f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "Release $GITHUB_REF_NAME" > notes.md
+          gh release create "$GITHUB_REF_NAME" "klaude-cli-$VERSION.tgz" --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Update Homebrew formula
+        run: |
+          url="https://registry.npmjs.org/klaude-cli/-/klaude-cli-$VERSION.tgz"
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            curl -fsSL "$url" -o package.tgz && break
+            echo "Waiting for the npm registry ($attempt)…"
+            sleep 15
+          done
+          sha="$(sha256sum package.tgz | cut -d' ' -f1)"
+          git fetch origin main
+          git checkout main
+          sed -i -E "s|^  url \".*\"|  url \"$url\"|; s|^  sha256 \".*\"|  sha256 \"$sha\"|" Formula/klaude.rb
+          if git diff --quiet; then
+            echo "Formula already up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Formula: klaude $VERSION"
+          git push origin main
