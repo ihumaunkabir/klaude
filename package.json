@@ -1,0 +1,44 @@
+{
+  "name": "klaude-cli",
+  "version": "0.1.0",
+  "description": "Klaude: a coding agent for the terminal, powered by local LLMs via Ollama",
+  "keywords": [
+    "ai",
+    "agent",
+    "coding-agent",
+    "cli",
+    "ollama",
+    "llm",
+    "local-llm",
+    "terminal"
+  ],
+  "homepage": "https://github.com/ihumaunkabir/klaude#readme",
+  "bugs": {
+    "url": "https://github.com/ihumaunkabir/klaude/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ihumaunkabir/klaude.git"
+  },
+  "license": "MIT",
+  "author": "Humaun Kabir",
+  "type": "module",
+  "bin": {
+    "klaude": "bin/klaude.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "start": "node bin/klaude.js",
+    "test": "node --test --experimental-test-isolation=none",
+    "check": "for f in bin/*.js src/*.js test/*.js; do node --check \"$f\" || exit 1; done"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
