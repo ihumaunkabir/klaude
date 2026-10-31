@@ -1,6 +1,6 @@
 {
   "name": "klaude-cli",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Klaude: a coding agent for the terminal, powered by local LLMs via Ollama",
   "keywords": [
     "ai",
