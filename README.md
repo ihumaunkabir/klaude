@@ -6,9 +6,11 @@
 
 [![CI](https://github.com/ihumaunkabir/klaude/actions/workflows/ci.yml/badge.svg)](https://github.com/ihumaunkabir/klaude/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/klaude-cli?color=cb3837&logo=npm)](https://www.npmjs.com/package/klaude-cli)
+[![npm downloads](https://img.shields.io/npm/dm/klaude-cli?color=cb3837&logo=npm)](https://www.npmjs.com/package/klaude-cli)
 [![Node.js](https://img.shields.io/node/v/klaude-cli?color=339933&logo=node.js&logoColor=white)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](package.json)
+[![GitHub stars](https://img.shields.io/github/stars/ihumaunkabir/klaude?style=social&label=stars)](https://github.com/ihumaunkabir/klaude/stargazers)
 
 Local by default: with Ollama, your code never leaves your machine. No telemetry.
 
@@ -21,7 +23,7 @@ Local by default: with Ollama, your code never leaves your machine. No telemetry
 ```text
 $ klaude
 ╭──────────────────────────────────────────────────────────╮
-│ ✻ Klaude v0.1.0                                          │
+│ ✻ Klaude v0.1.1                                          │
 │                                                          │
 │ model  qwen3-coder · Ollama                              │
 │ mode   manual · asks before edits and commands           │
@@ -34,7 +36,8 @@ $ klaude
 ⏺ edit_file(calc.py)
   │ -     return a - b
   │ +     return a + b
-  Allow edit_file on calc.py? [y]es / [n]o / [a]lways allow edit_file in this project: a
+  Allow edit_file on calc.py?
+  [y]es / [n]o / [a]lways allow edit_file in this project: a
   ✓ Saved "edit_file" to .klaude/settings.json; Klaude won't ask again in this project
   ⎿ Edited calc.py at line 2 (1 replacement)
 
@@ -44,6 +47,25 @@ $ klaude
 
 Fixed: add() subtracted instead of adding. Verified: add(2, 3) returns 5.
 ✻ 19.1s · 2481 in · 96 out
+```
+
+Broad research fans out to read-only sub-agents that run **in parallel**, keeping the main context small:
+
+```text
+› before migrating to passkeys, map how auth works today
+
+⏺ task(map the login flow)
+  ⎿ [map the login flow] POST /login → auth.js:41 issues a signed session
+    cookie, verified by requireAuth (middleware.js:18)…
+⏺ task(list every auth check)
+  ⎿ [list every auth check] 7 call sites: 5 via requireAuth, 2 inline checks
+    in admin.js — full list with line numbers below…
+⏺ task(find the auth tests)
+  ⎿ [find the auth tests] test/auth.test.js (14 tests) covers login and
+    expiry; middleware untested…
+
+Here's the full picture, the risks, and a step-by-step passkey migration plan.
+✻ 38.4s · 5127 in · 340 out
 ```
 
 ## Features
