@@ -83,7 +83,12 @@ jobs:
             echo "Waiting for the npm registry ($attempt)…"
             sleep 15
           done
+          if [ ! -s package.tgz ]; then
+            echo "::error::Could not download $url from the npm registry"
+            exit 1
+          fi
           sha="$(sha256sum package.tgz | cut -d' ' -f1)"
+          [ -n "$sha" ] || { echo "::error::Empty sha256"; exit 1; }
           git fetch origin main
           git checkout main
           sed -i -E "s|^  url \".*\"|  url \"$url\"|; s|^  sha256 \".*\"|  sha256 \"$sha\"|" Formula/klaude.rb

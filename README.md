@@ -330,10 +330,9 @@ CI runs the tests on Linux and macOS with Node 22 and 24. It also lints `install
 
 ### Releasing
 
-1. Update `CHANGELOG.md`.
-2. Run `npm version <patch|minor|major>`, then `git push --follow-tags`.
+Releases are automatic. Bump `"version"` in `package.json` and add a `## [<version>]` section to `CHANGELOG.md` in your pull request; merging it to `main` publishes to npm, creates the tag and GitHub release, and updates the Homebrew formula. Merges that don't bump the version don't release.
 
-The tag starts the [release workflow](.github/workflows/release.yml), which tests, publishes to npm, creates a GitHub release and updates the Homebrew formula. It needs an npm automation token stored as the `NPM_TOKEN` repository secret (`gh secret set NPM_TOKEN`).
+The [release workflow](.github/workflows/release.yml) needs an npm granular access token (publish rights, 2FA bypass enabled) stored as the `NPM_TOKEN` repository secret (`gh secret set NPM_TOKEN`).
 
 ## License
 
