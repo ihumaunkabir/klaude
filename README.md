@@ -10,7 +10,6 @@
 [![Node.js](https://img.shields.io/node/v/klaude-cli?color=339933&logo=node.js&logoColor=white)](https://nodejs.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](package.json)
-[![GitHub stars](https://img.shields.io/github/stars/ihumaunkabir/klaude?style=social&label=stars)](https://github.com/ihumaunkabir/klaude/stargazers)
 
 Local by default: with Ollama, your code never leaves your machine. No telemetry.
 
