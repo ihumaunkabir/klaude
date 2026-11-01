@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   release:
@@ -49,7 +50,7 @@ jobs:
             echo "::error::NPM_TOKEN secret is not set. Create an npm automation token and run: gh secret set NPM_TOKEN"
             exit 1
           fi
-          npm publish --access public
+          npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
