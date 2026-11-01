@@ -1,9 +1,11 @@
 name: Release
 
-# Runs when a version tag is pushed:  npm version patch && git push --follow-tags
+# Publishes when a merge to main bumps package.json past the version on npm.
+# Cut a release by bumping "version" (and CHANGELOG.md) in a PR; merges that
+# don't bump the version are a green no-op.
 on:
   push:
-    tags: ['v*']
+    branches: [main]
 
 permissions:
   contents: write
@@ -20,19 +22,28 @@ jobs:
           node-version: 22
           registry-url: https://registry.npmjs.org
 
-      - name: Check tag matches package.json
+      - name: Check whether a release is due
         run: |
           version="$(node -p 'require("./package.json").version')"
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
-            exit 1
+          published="$(npm view klaude-cli version 2>/dev/null || true)"
+          [ -n "$published" ] || published="0.0.0"
+          latest="$(printf '%s\n' "$version" "$published" | sort -V | tail -n1)"
+          echo "package.json: $version, npm registry: $published"
+          if [ "$version" != "$published" ] && [ "$latest" = "$version" ]; then
+            echo "Releasing v$version"
+            echo "release=true" >> "$GITHUB_ENV"
+          else
+            echo "Nothing to release"
+            echo "release=false" >> "$GITHUB_ENV"
           fi
           echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Test
+        if: env.release == 'true'
         run: npm test
 
       - name: Publish to npm
+        if: env.release == 'true'
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then
             echo "::error::NPM_TOKEN secret is not set. Create an npm automation token and run: gh secret set NPM_TOKEN"
@@ -42,16 +53,29 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create GitHub release
+      - name: Tag and create GitHub release
+        if: env.release == 'true'
         run: |
+          tag="v$VERSION"
           npm pack
           awk -v v="$VERSION" 'index($0, "## [" v "]") == 1 { f = 1; next } /^## \[/ { f = 0 } f' CHANGELOG.md > notes.md
-          [ -s notes.md ] || echo "Release $GITHUB_REF_NAME" > notes.md
-          gh release create "$GITHUB_REF_NAME" "klaude-cli-$VERSION.tgz" --title "$GITHUB_REF_NAME" --notes-file notes.md
+          [ -s notes.md ] || echo "Release $tag" > notes.md
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+            echo "Tag $tag already exists, skipping tag push"
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists"
+          else
+            gh release create "$tag" "klaude-cli-$VERSION.tgz" --title "$tag" --notes-file notes.md
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
 
       - name: Update Homebrew formula
+        if: env.release == 'true'
         run: |
           url="https://registry.npmjs.org/klaude-cli/-/klaude-cli-$VERSION.tgz"
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
