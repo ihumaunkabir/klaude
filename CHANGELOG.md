@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0]
+
+### Added
+
+- Live command menu: typing `/` lists every command (built-in and custom)
+  under the input line, filtering as you type. ↑/↓ scroll the list, Tab
+  completes the highlighted command and Esc hides the menu.
+
 ## [0.1.1]
 
 ### Fixed
