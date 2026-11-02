@@ -72,8 +72,10 @@ export function renderCommand(template, args) {
   return args ? `${template}\n\nArguments: ${args}` : template;
 }
 
-// Readline completer for /commands and @paths.
-export function makeCompleter(cwd, commandNames) {
+// Readline completer for /commands and @paths. selection(), when given,
+// returns the command highlighted in the live command menu, so Tab completes
+// it even when several commands match what is typed.
+export function makeCompleter(cwd, commandNames, selection = null) {
   return (line) => {
     const mention = line.match(/(?:^|\s)@([^\s@]*)$/);
     if (mention) {
@@ -93,6 +95,11 @@ export function makeCompleter(cwd, commandNames) {
       return [hits, `@${typed}`];
     }
     if (/^\/\S*$/.test(line)) {
+      const chosen = selection?.();
+      if (chosen) {
+        const hit = `/${chosen} `;
+        if (hit.startsWith(line)) return [[hit], line];
+      }
       const all = commandNames().map((n) => `/${n}`);
       const hits = all.filter((n) => n.startsWith(line));
       return [hits.length ? hits : all, line];

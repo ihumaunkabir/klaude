@@ -29,6 +29,7 @@ import {
 import { PROVIDERS, createClient } from '../src/providers.js';
 import { isLocalHost, startOllama, ollamaLogFile } from '../src/server.js';
 import { expandMentions, loadCustomCommands, renderCommand, makeCompleter, suggestCommand } from '../src/input.js';
+import { CommandMenu } from '../src/command-menu.js';
 import { c, write, visibleLength } from '../src/ui.js';
 
 const { version: VERSION } = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
@@ -57,7 +58,7 @@ Options:
 In the REPL:
   /help  /login  /logout  /mode  /plan  /undo  /clear  /compact  /todos  /memory
   /sessions  /resume [n|name]  /rename <name>  /model  /models  /shells  /context  /exit
-  @path attaches a file · !command runs a shell command · Tab completes · \\ continues a line
+  @path attaches a file · !command runs a shell command · / opens the command menu · \\ continues a line
   Shift+Tab cycles modes · Ctrl+O shows thinking · Ctrl+C interrupts · Ctrl+D quits
 `;
 
@@ -166,7 +167,7 @@ function banner({ provider, model, mode, cwd, nativeTools }) {
     ...rows.map(line),
     c.gray(`╰${'─'.repeat(width + 2)}╯`),
     c.gray('  Ask for anything: "fix the failing test", "add a --json flag", "explain src/app.js"'),
-    c.gray('  @file attach · !cmd shell · /help commands · shift+tab mode · ctrl+o thinking · ctrl+c stop'),
+    c.gray('  @file attach · !cmd shell · / command menu · shift+tab mode · ctrl+o thinking · ctrl+c stop'),
     '',
   ].join('\n');
 }
@@ -188,11 +189,16 @@ async function main() {
 
   let customCommands = await loadCustomCommands(cwd);
   const commandNames = () => [...COMMANDS.map(([n]) => n), ...customCommands.keys()];
+  const commandList = () => [
+    ...COMMANDS.map(([name, , description]) => ({ name, description })),
+    ...[...customCommands].map(([name, cmd]) => ({ name, description: cmd.description })),
+  ];
+  let menu = null;
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: interactive,
-    completer: interactive ? makeCompleter(cwd, commandNames) : undefined,
+    completer: interactive ? makeCompleter(cwd, commandNames, () => (menu?.visible ? menu.items[menu.selected]?.name : null)) : undefined,
   });
   const askRaw = async (question) => (await rl.question(question)).trim();
   const ask = async (question) => (await askRaw(question)).toLowerCase();
@@ -422,6 +428,10 @@ async function main() {
     },
   });
 
+  // The live /command menu, drawn under the input line while typing a command.
+  menu = new CommandMenu(rl, commandList, () => promptFor(agent.mode));
+  if (interactive) menu.enable();
+
   let sessionId = newSessionId();
   let sessionName;
 
@@ -559,6 +569,7 @@ async function main() {
     if (Date.now() - lastSigint < 1500) process.exit(0);
     lastSigint = Date.now();
     write(c.gray('\n(press Ctrl+C again to exit)\n'));
+    menu?.close();
     rl.write(null, { ctrl: true, name: 'u' });
     rl.prompt();
   });
@@ -624,6 +635,7 @@ async function main() {
   !command         Run a shell command yourself; its output goes with your next message
   \\ at line end    Continue on the next line
 ${c.bold('Keys')}
+  /                Command menu: it filters as you type; ↑↓ scroll, Tab completes, Esc hides
   Shift+Tab        Cycle mode: manual → auto → plan
   Ctrl+O           Show/hide the model's thinking
   Ctrl+C           Interrupt the agent (twice when idle to quit)
@@ -635,7 +647,9 @@ ${MODES.map((m) => `  ${MODE_INFO[m].color(m.padEnd(16))} ${c.gray(MODE_INFO[m].
 
   while (true) {
     let input = '';
+    menu?.arm();
     let line = await rl.question(`\n${promptFor(agent.mode)}`);
+    menu?.disarm();
     while (line.endsWith('\\')) {
       input += line.slice(0, -1) + '\n';
       line = await rl.question(c.gray('. '));

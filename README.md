@@ -153,7 +153,7 @@ Describe what you want in plain language, for example *"add input validation to 
 | `/context` | Show context window usage |
 | `/exit` | Quit (the session is saved) |
 
-**Input:** `@path` attaches a file or folder, `!command` runs a shell command, <kbd>Tab</kbd> completes, and a `\` at the end of a line continues on the next one.
+**Input:** `@path` attaches a file or folder, `!command` runs a shell command, <kbd>Tab</kbd> completes, and a `\` at the end of a line continues on the next one. Typing `/` opens the command menu: it lists every command, filters as you type, <kbd>↑</kbd>/<kbd>↓</kbd> scroll, <kbd>Tab</kbd> completes the highlighted command and <kbd>Esc</kbd> hides it.
 
 **Keys:** <kbd>Shift</kbd>+<kbd>Tab</kbd> cycles the mode. <kbd>Ctrl</kbd>+<kbd>O</kbd> shows or hides the model's thinking. <kbd>Ctrl</kbd>+<kbd>C</kbd> interrupts the agent (press it twice while idle to quit). <kbd>Ctrl</kbd>+<kbd>D</kbd> quits.
 
