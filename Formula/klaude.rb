@@ -5,8 +5,8 @@
 class Klaude < Formula
   desc "Coding agent for the terminal powered by local LLMs via Ollama"
   homepage "https://github.com/ihumaunkabir/klaude"
-  url "https://registry.npmjs.org/klaude-cli/-/klaude-cli-0.1.1.tgz"
-  sha256 "1c5f9081518c285de07078bbdf03701a6a4b3621b9d5cb746e4ac36cbffd5016"
+  url "https://registry.npmjs.org/klaude-cli/-/klaude-cli-0.2.0.tgz"
+  sha256 "33c53ae4f4ccd2fe433a430b03ebd93935ac84a5a9117ceed3c2a7c9d434faac"
   license "MIT"
 
   depends_on "node"
